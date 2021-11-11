@@ -80,7 +80,7 @@ public interface DisjointSetElement {
      * Cambia l'intero associato a questo elemento. Si veda la API del metodo
      * {@getInt}.
      * 
-     * @param e
+     * @param n
      *              il nuovo valore del riferimento 1
      */
     void setNumber(int n);

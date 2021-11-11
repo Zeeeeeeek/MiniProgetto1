@@ -10,16 +10,16 @@ import java.util.Set;
  * appartiene al multinsieme. Se tale numero è invece un intero positivo
  * {@code n} allora l'elemento è presente {@code n} volte nel multinsieme. La
  * molteplicità non può essere negativa.
- * 
+ *
  * Come nel classico insieme, in un multinsieme gli elementi non sono ordinati
  * né indicizzati.
- * 
+ *
  * Non è possibile inserire {@code null} in un multinsieme.
  *
  * Poiché la molteplicità è rappresentata con un {@code int}, un multinsieme non
  * può mai contenere più di {@code Integer.MAX_VALUE} occorrenze per ogni
  * elemento.
- * 
+ *
  * @author Luca Tesei
  *
  * @param <E>
@@ -32,7 +32,7 @@ public interface Multiset<E> {
      * Restituisce il numero totale di elementi in questo multinsieme. Ad
      * esempio, per il multinsieme {@code [1,2,3,1,4]} il metodo restituisce
      * {@code 5} poiché l'elemento {@code 1} ha due occorrenze.
-     * 
+     *
      * @return il numero totale di elementi in questo multinsieme contando tutte
      *         le occorrenze
      *
@@ -82,8 +82,6 @@ public interface Multiset<E> {
      *                        il numero di occorrenze dell'elemento da
      *                        aggiungere. Può essere zero, nel qual caso non
      *                        verrà apportata alcuna modifica
-     * @return il numero di occorrenze dell'elemento prima dell'operazione;
-     *         possibilmente zero
      * @throws IllegalArgumentException
      *                                      se questa operazione comporterebbe
      *                                      più di {@code Integer.MAX_VALUE}
@@ -158,14 +156,14 @@ public interface Multiset<E> {
      * per ogni elemento deve presentare tutte le occorrenze. Le occorrenze
      * dello stesso elemento devono essere presentate in sequenza. L'iteratore
      * restituito non implementa l'operazione {@code remove()}.
-     * 
+     *
      * L'iteratore restituito deve essere <b>fail-fast</b>: se il multinsieme
      * viene modificato strutturalmente (cioè viene fatta un'aggiunta o una
      * cancellazione di almeno un'occorrenza) in qualsiasi momento dopo la
      * creazione dell'iteratore, l'iteratore dovrà lanciare una
      * {@code ConcurrentModificationException} alla chiamata successiva del
      * metodo {@code next()}.
-     * 
+     *
      * @return un iteratore per questo multinsieme
      */
     public Iterator<E> iterator();

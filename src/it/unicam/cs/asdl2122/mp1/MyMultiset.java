@@ -1,24 +1,34 @@
 package it.unicam.cs.asdl2122.mp1;
 
+
+
 import java.util.*;
 
-// TODO inserire import della Java SE che si ritengono necessari
-
 /**
- * // TODO spiegare come viene implementato il multiset.
  *
+ * Un multiset sfrutta l'Hashset per contenere tutti i suoi elementi, l'hashset in questione contiene delle istanze di
+ * tipo {@link Nodo}. I nodi hanno un oggetto e un intero che ne rappresenta le occorrenze così che, se un oggetto
+ * dovesse ripetersi non vengono create molti puntatori allo stesso oggetto ma se ne incrementino le occorrenze del nodo.<br><br>
+ *
+ * Sono stati ridefiniti i metodi {@link Nodo#equals} e {@link Nodo#hashCode} per un corretto controllo tra nodi.<br><br>
+ *
+ * È stato creato un iteratore {@link Itr} per il multiset. L'iteratore è fail-fast, i metodi {@link Itr#hasNext} e
+ * {@link Itr#next} tengono conto delle occorrenze di uno stesso oggetto.<br><br>
+ *
+ * Tutti i metodi che modificano le occorrenze di un oggetto del multiset rimuovono e ricreano il nodo con le occorrenze
+ * giuste. Questo perché l'hashset usa una hashmap con key di ogni nodo il suo hashcode. Qualora si limitasse ad una
+ * semplice modifica della variabile occorrenze si invaliderebbe l'hash usato come key.
  * @param <E> il tipo degli elementi del multiset
- * @author Luca Tesei (template) **INSERIRE NOME, COGNOME ED EMAIL
- * xxxx@studenti.unicam.it DELLO STUDENTE** (implementazione)
+ * @author Luca Tesei (template) <br>
+ * Enrico Ulissi enrico.ulissi@studenti.unicam.it (implementazione)
  */
 public class MyMultiset<E> implements Multiset<E> {
 
-    //TODO inserire le variabili istanza private che si ritengono necessarie
     private int size;
     private HashSet<Nodo<E>> insieme;
     private int numeroModifiche;
 
-    // TODO inserire le classi interne che si ritengono necessarie
+
     private static class Nodo<E> {
         private int occorrenze;
         private E oggetto;
@@ -27,7 +37,7 @@ public class MyMultiset<E> implements Multiset<E> {
             this.occorrenze = occorrenze;
             this.oggetto = oggetto;
         }
-
+        //Due nodi sono uguali se l'oggetto e le occorrenze sono uguali
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -35,7 +45,7 @@ public class MyMultiset<E> implements Multiset<E> {
             Nodo<?> nodo = (Nodo<?>) o;
             return ((this.occorrenze == nodo.occorrenze) && (this.oggetto.equals(nodo.oggetto)));
         }
-
+        //Riscritto in accordo ai valori confrontati nell'equals
         @Override
         public int hashCode() {
             int hash = 31 * 17 + this.occorrenze;
@@ -139,8 +149,9 @@ public class MyMultiset<E> implements Multiset<E> {
                 numeroModifiche++;
                 size += occurrences;
                 nodo.occorrenze += occurrences;
-                //Al fine di usare il contains devo rimuovere e riaggiungere un nodo con le occorrenze aggiornate poiché
-                //se modificassi solo le occorrenze cambierebbe l'hashcode del nodo ed invaliderei l'hash usato dal hashset
+                //Al fine di usare il containsAll del hashset nel metodo equals devo rimuovere e riaggiungere un nodo
+                //con le occorrenze aggiornate poiché se modificassi solo le occorrenze cambierebbe l'hashcode
+                //del nodo ed invaliderei l'hash usato dal hashset come key nell'hashmap
                 iterator.remove();
                 insieme.add(nodo);
                 //restituisco le occorrenze prima della modifica
@@ -170,8 +181,9 @@ public class MyMultiset<E> implements Multiset<E> {
                         "operazione aggiungerebbe un numero maggiore di Integer.MAX_VALUE");
                 //Modifico le occorrenze dell'oggetto
                 nodo.occorrenze++;
-                //Al fine di usare il contains devo rimuovere e riaggiungere un nodo con le occorrenze aggiornate poiché
-                //se modificassi solo le occorrenze cambierebbe l'hashcode del nodo ed invaliderei l'hash usato dal hashset
+                //Al fine di usare il containsAll del hashset nel metodo equals devo rimuovere e riaggiungere un nodo
+                //con le occorrenze aggiornate poiché se modificassi solo le occorrenze cambierebbe l'hashcode
+                //del nodo ed invaliderei l'hash usato dal hashset come key nell'hashmap
                 iterator.remove();
                 insieme.add(nodo);
                 numeroModifiche++;
@@ -199,6 +211,9 @@ public class MyMultiset<E> implements Multiset<E> {
                 //Se le occorrenze dell'oggetto sono maggiori di quelle da rimuovere, riduco le occorrenze.
                 if (nodo.occorrenze > occurrences) {
                     nodo.occorrenze -= occurrences;
+                    //Al fine di usare il containsAll del hashset nel metodo equals devo rimuovere e riaggiungere un nodo
+                    //con le occorrenze aggiornate poiché se modificassi solo le occorrenze cambierebbe l'hashcode
+                    //del nodo ed invaliderei l'hash usato dal hashset come key nell'hashmap
                     iterator.remove();
                     insieme.add(nodo);
                     numeroModifiche++;
@@ -206,11 +221,11 @@ public class MyMultiset<E> implements Multiset<E> {
                     return nodo.occorrenze + occurrences;
                 }
                 //Altrimenti salvo le occorrenze e rimuovo il nodo
-                int tempOccorrenze = nodo.occorrenze;
+                int nodoOccorrenze = nodo.occorrenze;
                 insieme.remove(nodo);
                 numeroModifiche++;
-                size -= occurrences;
-                return tempOccorrenze;
+                size -= nodoOccorrenze;
+                return nodoOccorrenze;
             }
         }
         return 0;
@@ -221,23 +236,27 @@ public class MyMultiset<E> implements Multiset<E> {
         if (element == null) throw new NullPointerException("Elemento da rimuovere null");
 
         Iterator<Nodo<E>> iterator = insieme.iterator();
-        Nodo<E> temp;
 
         while (iterator.hasNext()) {
-            temp = iterator.next();
-            if (element.equals(temp.oggetto)) {
-                //Se ha una sola occorrenza rimuovo il nodo
-                if (temp.occorrenze == 1) {
+            Nodo<E> nodo = iterator.next();
+            if (element.equals(nodo.oggetto)) {
+                //Se il nodo ha una sola occorrenza rimuovo il nodo
+                if (nodo.occorrenze == 1) {
                     numeroModifiche++;
                     size--;
-                    return insieme.remove(temp);
+                    return insieme.remove(nodo);
                 }
-                temp.occorrenze--;
+                //Se ha più occorrenze rimuovo il nodo e lo ricreo con le giuste occorrenze, per non invalidare l'hash usato
+                //dall' hashset.
+                nodo.occorrenze--;
+                iterator.remove();
+                insieme.add(nodo);
                 numeroModifiche++;
                 size--;
                 return true;
             }
         }
+        //Arrivati in questo punto non ho trovato l'elemento e restituisco false
         return false;
 
     }
@@ -248,54 +267,56 @@ public class MyMultiset<E> implements Multiset<E> {
         if (count < 0) throw new IllegalArgumentException("Numero di occorreze da rimuovere negativo");
 
         Iterator<Nodo<E>> iterator = insieme.iterator();
-        Nodo<E> temp;
-        int tempOccorrenze;
-        while (iterator.hasNext()) {
-            temp = iterator.next();
 
-            if (element.equals(temp.oggetto)) {
-                tempOccorrenze = temp.occorrenze;
+        int nodoOccorrenze = 0;
+        while (iterator.hasNext()) {
+            Nodo<E> nodo = iterator.next();
+
+            if (element.equals(nodo.oggetto)) {
+                nodoOccorrenze = nodo.occorrenze;
                 //Se count corrisponde alle occorrenze attuali allora non faccio nessuna modifica
-                if (count == tempOccorrenze) return tempOccorrenze;
+                if (count == nodoOccorrenze) return nodoOccorrenze;
 
                 //Sono sicuro di dover fare delle modifiche
                 numeroModifiche++;
                 //Se count è 0 rimuovo l'oggetto
                 if (count == 0) {
-                    //Tolgo le occorrenze di element dalla dimensione e le restituisco
+                    //Tolgo il nodo e restituisco le vecchie occorrenze
                     iterator.remove();
-                    size -= tempOccorrenze;
-                    return tempOccorrenze;
+                    size -= nodoOccorrenze;
+                    return nodoOccorrenze;
                 }
                 //Riscrivo le occorrenze
-                temp.occorrenze = count;
-                //Al fine di usare il contains devo rimuovere e riaggiungere un nodo con le occorrenze aggiornate poiché
-                //se modificassi solo le occorrenze cambierebbe l'hashcode del nodo ed invaliderei l'hash usato dal hashset
+                nodo.occorrenze = count;
+                //Al fine di usare il containsAll del hashset nel metodo equals devo rimuovere e riaggiungere un nodo
+                //con le occorrenze aggiornate poiché se modificassi solo le occorrenze cambierebbe l'hashcode
+                //del nodo ed invaliderei l'hash usato dal hashset come key nell'hashmap
                 iterator.remove();
-                insieme.add(temp);
+                insieme.add(nodo);
                 //Se count è maggiore delle occorrenze correnti allora ne aggiungo altre
-                if (count > tempOccorrenze) {
+                if (count > nodoOccorrenze) {
                     //Aggiungo alla dimensione la differenza tra le occorrenze attuali e count
-                    size += count - tempOccorrenze;
+                    size += count - nodoOccorrenze;
                 }
                 //Se count è minore delle occorrenze correnti allora ne tolgo la differenza
-                if (count < tempOccorrenze) {
+                if (count < nodoOccorrenze) {
                     //Tolgo count a size
-                    size -= tempOccorrenze - count;
+                    size -= nodoOccorrenze - count;
                 }
-                return tempOccorrenze;
+                return nodoOccorrenze;
             }
         }
+        //Arrivati a questo punto l'elemento non è presente nell'insieme e quindi creo un nuovo nodo
         insieme.add(new Nodo<>(element, count));
         numeroModifiche++;
         size += count;
-        return 0;
+        return nodoOccorrenze;
     }
 
     @Override
     public Set<E> elementSet() {
         Iterator<Nodo<E>> iterator = insieme.iterator();
-
+        //Creo un hashset nuovo e ci inserisco solo gli oggetti dell'insieme
         HashSet<E> h = new HashSet<>();
         while (iterator.hasNext()) {
             h.add(iterator.next().oggetto);
@@ -312,11 +333,10 @@ public class MyMultiset<E> implements Multiset<E> {
     public boolean contains(Object element) {
         if (element == null) throw new NullPointerException("Elemento è null");
         Iterator<Nodo<E>> iterator = insieme.iterator();
-        Nodo<E> temp;
-
+        //Controllo ogni nodo e se trovo l'oggetto che cerco restituisco true, altrimenti false
         while (iterator.hasNext()) {
-            temp = iterator.next();
-            if (element.equals(temp.oggetto)) return true;
+            Nodo<E> nodo = iterator.next();
+            if (element.equals(nodo.oggetto)) return true;
         }
         return false;
     }

@@ -379,7 +379,7 @@ class LinkedListDisjointSetsTest {
                 6);
         ds.makeSet(e6);
         MyIntLinkedListDisjointSetElement e7 = new MyIntLinkedListDisjointSetElement(
-                6);
+                7);
         ds.makeSet(e7);
         ds.union(e4, e5);
         ds.union(e5, e6);
