@@ -2,17 +2,18 @@ package it.unicam.cs.asdl2122.mp1;
 
 
 import java.util.*;
+import java.util.Arrays;
 
 /**
  * Un multiset sfrutta l'Hashset per contenere tutti i suoi elementi, l'hashset in questione contiene delle istanze di
- * tipo {@link Elemento}. Gli elementi hanno un oggetto e un intero che ne rappresenta le occorrenze così che, se un oggetto
- * dovesse ripetersi non vengono create molti puntatori allo stesso oggetto ma se ne incrementino le occorrenze dell' elemento.<br><br>
- * <p>
+ * tipo {@link Elemento}. Gli elementi hanno un oggetto e un intero che ne rappresentano le occorrenze così che, se un oggetto
+ * dovesse ripetersi, non vengono creati molti puntatori allo stesso oggetto ma se ne incrementano le occorrenze dell'elemento.<br><br>
+ *
  * Sono stati ridefiniti i metodi {@link Elemento#equals} e {@link Elemento#hashCode} per un corretto controllo tra elementi.<br><br>
- * <p>
+ *
  * È stato creato un iteratore {@link Itr} per il multiset. L'iteratore è fail-fast, i metodi {@link Itr#hasNext} e
  * {@link Itr#next} tengono conto delle occorrenze di uno stesso oggetto.<br><br>
- * <p>
+ *
  * Tutti i metodi che modificano le occorrenze di un oggetto del multiset rimuovono e ricreano l'elemento con le occorrenze
  * giuste. Questo perché l'hashset usa una hashmap con key di ogni elemento il suo hashcode. Qualora si limitasse ad una
  * semplice modifica della variabile occorrenze si invaliderebbe l'hash usato come key.
@@ -62,7 +63,7 @@ public class MyMultiset<E> implements Multiset<E> {
 
     /*
         Iteratore fail-fast per MyMultiset, classe non statica perché necessita di accedere agli elementi della classe
-        in cui è stata creata per funionare
+        in cui è stata creata per funzionare
      */
     private class Itr implements Iterator<E> {
         private Elemento<E> elementoRestituito;
@@ -148,9 +149,9 @@ public class MyMultiset<E> implements Multiset<E> {
     }
 
     /**
-     * Aggiunge un elemento e le sue occorrenze all'insieme. Modifica le occorrenze se l'elemento è gia
+     * Aggiunge un elemento e le sue occorrenze all'insieme. Modifica le occorrenze se l'elemento è già
      * presente, nel caso contrario ne crea un altro con le giuste occorrenze.<br><br>
-     * <p>
+     *
      * Nota: utilizzando un hashset quando si modifica un elemento questo deve essere rimosso e riaggiunto con
      * le giuste occorrenze. Altrimenti invaliderei l'hash usato dall'hashset nell'hashmap.
      *
@@ -206,7 +207,7 @@ public class MyMultiset<E> implements Multiset<E> {
 
     /**
      * Variante del metodo add che aggiunge una sola occorrenza.<br><br>
-     * <p>
+     *
      * Nota: utilizzando un hashset quando si modifica un elemento questo deve essere rimosso e riaggiunto con
      * le giuste occorrenze. Altrimenti invaliderei l'hash usato dall'hashset nell'hashmap.
      *
@@ -286,6 +287,7 @@ public class MyMultiset<E> implements Multiset<E> {
                 return elementoOccorrenze;
             }
         }
+        //L'elemento da rimuovere non era presente allora restituisco 0
         return 0;
     }
 
@@ -366,7 +368,7 @@ public class MyMultiset<E> implements Multiset<E> {
                 }
                 //Riscrivo le occorrenze
                 elemento.occorrenze = count;
-                //Rimuovoe aggiungo l'elemento per l'hash
+                //Rimuovo e aggiungo l'elemento per l'hash
                 iterator.remove();
                 insieme.add(elemento);
                 //Se count è maggiore delle occorrenze correnti allora ne aggiungo altre
@@ -421,7 +423,7 @@ public class MyMultiset<E> implements Multiset<E> {
     }
 
     /**
-     * Verifica se un elemento è contenuto in un multinsieme
+     * Verifica se un elemento è contenuto in un multinsieme.
      *
      * @param element l'elemento da cercare
      * @return true se è nell'insieme, false altrimenti
@@ -431,16 +433,17 @@ public class MyMultiset<E> implements Multiset<E> {
     public boolean contains(Object element) {
         if (element == null) throw new NullPointerException("Elemento è null");
         Iterator<Elemento<E>> iterator = insieme.iterator();
-        //Controllo ogni elemento e se trovo l'oggetto che cerco restituisco true, altrimenti false
+        //Controllo ogni elemento e se trovo l'oggetto che cerco restituisco true
         while (iterator.hasNext()) {
             Elemento<E> elemento = iterator.next();
             if (element.equals(elemento.oggetto)) return true;
         }
+        //Non avendo trovato l'oggetto restituisco false
         return false;
     }
 
     /**
-     * Elimina l'insieme, aggiunge una modifica e imposta la dimensione a 0
+     * Svuota l'insieme, aggiunge una modifica e imposta la dimensione a 0
      */
     @Override
     public void clear() {
@@ -466,7 +469,9 @@ public class MyMultiset<E> implements Multiset<E> {
         if (this == o) return true;
         if (!(o instanceof MyMultiset)) return false;
         MyMultiset<?> obj = (MyMultiset<?>) o;
+        //Se le dimensioni sono differenti sono certo non abbiano gli stessi oggetti
         if (obj.size != size) return false;
+        //Non avendo invalidato l'hash durante le modifiche allora sono in grado di usare il containsAll
         return obj.insieme.containsAll(insieme);
     }
 
@@ -479,7 +484,7 @@ public class MyMultiset<E> implements Multiset<E> {
     public int hashCode() {
         int hash = 0;
         for (Elemento<E> elemento : insieme) {
-            hash += elemento.hashCode();
+            hash += 31 * elemento.hashCode();
         }
         return hash;
     }

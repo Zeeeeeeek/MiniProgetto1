@@ -5,16 +5,16 @@ import java.util.Set;
 
 
 /**
- * La classe fa uso di un hashset per contenere tutti quanti i suoi rappresentanti.<br><br>
+ * La classe fa uso di un hashset per contenere tutti i suoi rappresentanti.<br><br>
  *
  * I metodi {@link LinkedListDisjointSets#makeSet} e {@link LinkedListDisjointSets#findSet} hanno complessità O(1)
  * perché non dipendono dalla dimensione di una linkedlist<br><br>
  *
- * Il metodo {@link LinkedListDisjointSets#union} ha complessità O(<code>n</code>) dove <code>n</code> è la cardinalitò
- * dell'insieme con cadinalità più piccola.<br><br>
+ * Il metodo {@link LinkedListDisjointSets#union} ha complessità O(<code>n</code>) dove <code>n</code> è la cardinalità
+ * dell'insieme con cardinalità più piccola.<br><br>
  *
- * @author Luca Tesei (template) ** Enrico Ulissi
- * enrico.ulissi@studenti.unicam.it ** (implementazione)
+ * @author Luca Tesei (template) <br>
+ * Enrico Ulissi enrico.ulissi@studenti.unicam.it (implementazione)
  */
 public class LinkedListDisjointSets implements DisjointSets {
 
@@ -34,6 +34,13 @@ public class LinkedListDisjointSets implements DisjointSets {
      * qualche insieme disgiunto se il puntatore al suo elemento rappresentante
      * (ref1) non è null.
      */
+
+    /**
+     * Verifica se un elemento è presente in un insieme disgiunto
+     * @param e
+     *              l'elemento da cercare
+     * @return true se il rappresentante non è null, false altrimenti
+     */
     @Override
     public boolean isPresent(DisjointSetElement e) {
         //Se e è null non lancio nessuna eccezione ma restituisco false
@@ -46,6 +53,15 @@ public class LinkedListDisjointSets implements DisjointSets {
      * rappresentato da una lista concatenata che contiene l'unico elemento. Il
      * rappresentante deve essere l'elemento stesso e la cardinalità deve essere
      * 1.
+     */
+
+    /**
+     * Crea un insieme singoletto con un solo elemento, imposta il rappresentante come <code>e</code> e la cardinalità
+     * ad 1
+     * @param e
+     *              l'elemento da inserire nell'insieme creato
+     * @throws NullPointerException se <code>e</code> è null
+     * @throws IllegalArgumentException se l'elemento fa già parte di un insieme disgiunto
      */
     @Override
     public void makeSet(DisjointSetElement e) {
@@ -62,6 +78,17 @@ public class LinkedListDisjointSets implements DisjointSets {
      * Nella rappresentazione con liste concatenate per trovare il
      * rappresentante di un elemento basta far riferimento al suo puntatore
      * ref1.
+     */
+
+    /**
+     * Restituisce il rappresentante dell'elemento passato. Complessità costante
+     * @param e
+     *              l'elemento di cui cercare l'insieme disgiunto
+     * @return rappresentante dell'elemento
+     *
+     * @throws NullPointerException se <code>e</code> è null
+     *
+     * @throws IllegalArgumentException se l'elemento passato non è presente in nessun insieme disgiunto
      */
     @Override
     public DisjointSetElement findSet(DisjointSetElement e) {
@@ -87,13 +114,24 @@ public class LinkedListDisjointSets implements DisjointSets {
      *
      */
 
-    /*
-     * Il metodo union inserisce come successivo del rappresentante della lista più grande il rappresentante di quella
-     * più piccola, successivamente il successivo dell'ultimo elemento della lista minore viene impostato come il secondo
+    /**
+     * Il metodo union ha come obbiettivo quello di inserire la lista più piccola tra il primo ed il secondo elemento
+     * della lista più grande.
+     * Nello specifico inserisce come successivo del rappresentante della lista più grande il rappresentante di quella
+     * più piccola, poi il successivo dell'ultimo elemento della lista minore viene impostato come il secondo
      * membro della lista più grande(il successivo del rappresentante prima dell'operazione). Così da avere un numero
      * di operazioni pari alla cardinalità della lista minore, garantendo la complessità di O(n), n = cardinalità
      * lista più piccola. Aggiorna poi i vari rappresentanti e la dimensione della lista.
-     * In fine rimuove il rappresentante della lista piccola dalla collezione.
+     * In fine rimuove il rappresentante della lista piccola dalla collezione.<br><br>
+     *
+     * @param e1 elemento del primo insieme da unire
+     *
+     * @param e2 elemento del secondo insieme da unire
+     *
+     * @throws NullPointerException se almeno uno tra <code>e1</code> o <code>e2</code> è null
+     *
+     * @throws IllegalArgumentException almeno uno tra <code>e1</code> o <code>e2</code> non sono presenti in nessun
+     * insieme disgiunto
      */
     @Override
     public void union(DisjointSetElement e1, DisjointSetElement e2) {
@@ -148,22 +186,40 @@ public class LinkedListDisjointSets implements DisjointSets {
             //Prendo il successivo
             elementE1 = elementE1.getRef2();
         }
+        //Terminato il ciclo elementE1 corrisponde all'ultimo elemento della lista più piccola, allora imposto come suo
+        //successivo il secondo elemento della lista più grande(prima dell'operazione) e aggiorno il suo rappresentante
         elementE1.setRef1(e2.getRef1());
         elementE1.setRef2(successivoElementoE2);
     }
 
+    /**
+     * Restituisce insieme dei rappresentanti degli insiemi disgiunti
+     * @return collezione dei rappresentanti
+     */
     @Override
     public Set<DisjointSetElement> getCurrentRepresentatives() {
+        //Restituisco direttamente l'intera collezione di rappresentanti
         return collezione;
     }
 
+    /**
+     * Restituisce gli elementi della lista di cui fa parte l'elemento passato
+     * @param e
+     *              l'elemento di cui si vuole ottenere l'insieme disgiunto di
+     *              cui fa parte
+     * @return  set contenente la lista di elementi
+     *
+     * @throws NullPointerException se <code>e</code> è null
+     *
+     * @throws IllegalArgumentException se l'elemento non è presente negli insiemi disgiunti
+     */
     @Override
     public Set<DisjointSetElement> getCurrentElementsOfSetContaining(
             DisjointSetElement e) {
         if(e == null) throw new NullPointerException("Elemento passato null");
         if(!isPresent(e)) throw new IllegalArgumentException("Elemento non presente negli insiemi");
         Set<DisjointSetElement> set = new HashSet<>();
-        //Prendo il rappresentante di e
+        //Prendo il primo elemento di e ed inizio ad inserirlo nel set
         DisjointSetElement elemento = e.getRef1();
 
         while(elemento!= null) {
@@ -174,6 +230,16 @@ public class LinkedListDisjointSets implements DisjointSets {
         return set;
     }
 
+    /**
+     * cardinalità dell'insieme di e
+     * @param e
+     *              l'elemento di cui si vuole ottenere la cardinalità
+     * @return cardinalità
+     *
+     * @throws NullPointerException se <code>e</code> è null
+     *
+     * @throws IllegalArgumentException se <code>e</code> non è presente in nessun insieme disgiunto
+     */
     @Override
     public int getCardinalityOfSetContaining(DisjointSetElement e) {
         if(e == null) throw new NullPointerException("Elemento null");
