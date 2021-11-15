@@ -3,18 +3,23 @@ package it.unicam.cs.asdl2122.mp1;
 import java.util.HashSet;
 import java.util.Set;
 
-// TODO insireire import della Java SE che si ritengono necessari
 
 /**
- * // TODO spiegare come viene implementata la classe
+ * La classe fa uso di un hashset per contenere tutti quanti i suoi rappresentanti.<br><br>
  *
- * @author Luca Tesei (template) **INSERIRE NOME, COGNOME ED EMAIL
- * xxxx@studenti.unicam.it DELLO STUDENTE** (implementazione)
+ * I metodi {@link LinkedListDisjointSets#makeSet} e {@link LinkedListDisjointSets#findSet} hanno complessità O(1)
+ * perché non dipendono dalla dimensione di una linkedlist<br><br>
+ *
+ * Il metodo {@link LinkedListDisjointSets#union} ha complessità O(<code>n</code>) dove <code>n</code> è la cardinalitò
+ * dell'insieme con cadinalità più piccola.<br><br>
+ *
+ * @author Luca Tesei (template) ** Enrico Ulissi
+ * enrico.ulissi@studenti.unicam.it ** (implementazione)
  */
 public class LinkedListDisjointSets implements DisjointSets {
 
-    // TODO inserire le variabili istanza private che si ritengono necessarie
 
+    //Collezione dei rappresentanti
     private HashSet<DisjointSetElement> collezione;
 
     /**
@@ -31,6 +36,7 @@ public class LinkedListDisjointSets implements DisjointSets {
      */
     @Override
     public boolean isPresent(DisjointSetElement e) {
+        //Se e è null non lancio nessuna eccezione ma restituisco false
         if(e == null) return false;
         return e.getRef1() != null;
     }
@@ -45,8 +51,9 @@ public class LinkedListDisjointSets implements DisjointSets {
     public void makeSet(DisjointSetElement e) {
         if (e == null) throw new NullPointerException("Elemento passato null");
         if (isPresent(e)) throw new IllegalArgumentException("L'elemento passato fa già parte di un insieme disgiunto");
-
+        //Visto che la complessità per l'add di un hashset è di O(1) allora anche il makeset avrà complessità costante
         collezione.add(e);
+        //Imposto e come il suo stesso rappresentante e imposto la cardinalità della sua lista ad 1
         e.setRef1(e);
         e.setNumber(1);
     }
@@ -61,6 +68,7 @@ public class LinkedListDisjointSets implements DisjointSets {
         if (e == null) throw new NullPointerException("e è null");
         if (!isPresent(e.getRef1())) throw new IllegalArgumentException("l'elemento passato non è presente" +
                 "in nessuno degli insiemi disgiunti correnti");
+        //Complessità di findset O(1)
         return e.getRef1();
     }
 
@@ -78,6 +86,15 @@ public class LinkedListDisjointSets implements DisjointSets {
      * caso di rappresentazione con liste concatenate.
      *
      */
+
+    /*
+     * Il metodo union inserisce come successivo del rappresentante della lista più grande il rappresentante di quella
+     * più piccola, successivamente il successivo dell'ultimo elemento della lista minore viene impostato come il secondo
+     * membro della lista più grande(il successivo del rappresentante prima dell'operazione). Così da avere un numero
+     * di operazioni pari alla cardinalità della lista minore, garantendo la complessità di O(n), n = cardinalità
+     * lista più piccola. Aggiorna poi i vari rappresentanti e la dimensione della lista.
+     * In fine rimuove il rappresentante della lista piccola dalla collezione.
+     */
     @Override
     public void union(DisjointSetElement e1, DisjointSetElement e2) {
         if (e1 == null || e2 == null) throw new NullPointerException("e1 o e2 è null");
@@ -87,46 +104,52 @@ public class LinkedListDisjointSets implements DisjointSets {
         //Se e1 e e2 fanno già parte dello stesso insieme disgiunto allora l’operazione non fa niente
         if (e1.getRef1() == e2.getRef1()) return;
 
-        //La cardinalità di e1 è maggiore di quella di e2
+        //La cardinalità di e1 è maggiore o uguale di quella di e2, quest'ultimo viene inserito in e1
         if (e1.getRef1().getNumber() >= e2.getRef1().getNumber()) {
+            //Salvo il rappresentante di e2
             DisjointSetElement elementE2 = e2.getRef1();
-            DisjointSetElement rappE2 = elementE2;
+            //Rimuovo il rappresentante di e2 dalla collezione
+            collezione.remove(elementE2);
+            //Prendo il rappresentante di e1 e il suo successivo
             DisjointSetElement rappElementoE1 = e1.getRef1();
             DisjointSetElement successivoElementoE1 = e1.getRef1().getRef2();
             //Imposto come successivo del rappresentante di e1 il rappresentante di e2
             rappElementoE1.setRef2(elementE2);
             //Cambio cardinalità
-            rappElementoE1.setNumber(e1.getRef1().getNumber() + e2.getRef1().getNumber());
+            rappElementoE1.setNumber(rappElementoE1.getNumber() + e2.getRef1().getNumber());
             while(elementE2.getRef2() != null) {
                 //Modifica rappresentante
                 elementE2.setRef1(rappElementoE1);
                 //Prendo il successivo
                 elementE2 = elementE2.getRef2();
             }
+            //Al termine del ciclo elementE2 è l'ultimo elemento di E2 allora cambio il suo rappresentante e imposto
+            //come suo successivo il secondo elemento della lista di E1
             elementE2.setRef1(rappElementoE1);
             elementE2.setRef2(successivoElementoE1);
-            collezione.remove(rappE2);
-
             return;
         }
         //Allora la cardinalità di e2 è più grande
+
+        //Salvo il rappresentante di e1 e lo rimuovo dalla collezione
         DisjointSetElement elementE1 = e1.getRef1();
-        DisjointSetElement rappE1 = elementE1;
-        DisjointSetElement rappElementoE2 = e2.getRef1();
-        DisjointSetElement successivoElementoE2 = e2.getRef1().getRef2();
+        collezione.remove(elementE1);
+
+        //Salvo il secondo elemento di e2 e il suo rappresentante
+        DisjointSetElement rappE2 = e2.getRef1();
+        DisjointSetElement successivoElementoE2 = rappE2.getRef2();
         //Imposto come successivo del rappresentante di e2 il rappresentante di e1
-        rappElementoE2.setRef2(elementE1);
+        rappE2.setRef2(elementE1);
         //Cambio cardinalità
-        rappElementoE2.setNumber(e1.getRef1().getNumber() + e2.getRef1().getNumber());
+        rappE2.setNumber(elementE1.getNumber() + rappE2.getNumber());
         while(elementE1.getRef2() != null) {
             //Modifica rappresentante
-            elementE1.setRef1(rappElementoE2);
+            elementE1.setRef1(rappE2);
             //Prendo il successivo
             elementE1 = elementE1.getRef2();
         }
-        elementE1.setRef1(rappElementoE2);
+        elementE1.setRef1(e2.getRef1());
         elementE1.setRef2(successivoElementoE2);
-        collezione.remove(rappE1);
     }
 
     @Override
